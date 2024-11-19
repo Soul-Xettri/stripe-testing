@@ -7,7 +7,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
-import './App.css';
+import "./App.css";
 
 const stripePromise = loadStripe(
   "pk_test_51PmrfaJkN9y4JcdgqTA7JKrDsB7qmcsROJtxIMZTlEiOzgFJgXUBmTgg9TcnKawRNV1RkAuv1vmuy5nu1MrO8mlS002i3jGQS2"
@@ -18,20 +18,21 @@ const CheckoutForm: React.FC = () => {
   const elements = useElements();
 
   const [email, setEmail] = useState<string>("");
+  const [planName, setPlanName] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [trialDays, setTrialDays] = useState<number>(7);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
   const [planId, setPlanId] = useState<string>(""); // New planId field
 
   const [billingDetails, setBillingDetails] = useState({
-    name: '',
-    businessName: '',
-    country: 'US',
-    city: '',
-    streetAddress1: '',
-    streetAddress2: '',
-    state: '',
-    zipCode: ''
+    name: "",
+    businessName: "",
+    country: "US",
+    city: "",
+    streetAddress1: "",
+    streetAddress2: "",
+    state: "",
+    zipCode: "",
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -81,22 +82,24 @@ const CheckoutForm: React.FC = () => {
       const response = await axios.post(
         "http://localhost:5005/api/v1/user/subscription",
         {
-          name:billingDetails.name,
+          name: billingDetails.name,
           email, // Email of the user
           quantity, // Number of subscriptions or slots
           paymentMethodId: paymentMethod?.id, // Payment method from Stripe
           customerEmail: email,
           trialDays, // Trial days if applicable
           planType, // Plan type (monthly or yearly)
+          planName,
           planId, // Pass the selected planId
           businessName: billingDetails.businessName, // Business name
           line1: billingDetails.streetAddress1, // Billing address
-          line2: billingDetails.streetAddress2, 
+          line2: billingDetails.streetAddress2,
           city: billingDetails.city,
           state: billingDetails.state,
           zipCode: billingDetails.zipCode,
           country: billingDetails.country,
           slotAddition: false, // Set true if adding slots only
+          referral: false,
         }
       );
 
@@ -112,7 +115,9 @@ const CheckoutForm: React.FC = () => {
     setLoading(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setBillingDetails((prevState) => ({
       ...prevState,
@@ -123,15 +128,15 @@ const CheckoutForm: React.FC = () => {
   const cardElementOptions = {
     style: {
       base: {
-        fontSize: '16px',
-        color: '#32325d',
-        '::placeholder': {
-          color: '#aab7c4',
+        fontSize: "16px",
+        color: "#32325d",
+        "::placeholder": {
+          color: "#aab7c4",
         },
       },
       invalid: {
-        color: '#fa755a',
-        iconColor: '#fa755a',
+        color: "#fa755a",
+        iconColor: "#fa755a",
       },
     },
   };
@@ -146,6 +151,18 @@ const CheckoutForm: React.FC = () => {
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="planName">Plan Name</label>
+        <input
+          type="planName"
+          id="planName"
+          placeholder="Enter plan name"
+          value={planName}
+          onChange={(e) => setPlanName(e.target.value)}
           required
         />
       </div>
@@ -310,7 +327,11 @@ const CheckoutForm: React.FC = () => {
 
       {error && <div style={{ color: "red" }}>{error}</div>}
 
-      <button type="submit" className="btn-submit" disabled={!stripe || loading}>
+      <button
+        type="submit"
+        className="btn-submit"
+        disabled={!stripe || loading}
+      >
         {loading ? "Processing..." : "Subscribe"}
       </button>
     </form>
