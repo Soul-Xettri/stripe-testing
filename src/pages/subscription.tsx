@@ -18,7 +18,7 @@ const CheckoutForm: React.FC = () => {
   const elements = useElements();
 
   const [email, setEmail] = useState<string>("");
-  const [planName, setPlanName] = useState<string>("Basic Plan");
+  const [planName, setPlanName] = useState<string>("Standard");
   const [quantity, setQuantity] = useState<number>(1);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
   const [planId, setPlanId] = useState<string>("");
