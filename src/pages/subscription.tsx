@@ -7,7 +7,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
-import "./Subscribe.css"; // Add a custom CSS file for styling
+import "./Subscribe.css";
 
 const stripePromise = loadStripe(
   "pk_test_51PmrfaJkN9y4JcdgqTA7JKrDsB7qmcsROJtxIMZTlEiOzgFJgXUBmTgg9TcnKawRNV1RkAuv1vmuy5nu1MrO8mlS002i3jGQS2"
@@ -17,29 +17,193 @@ const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState<string>("soulchhetri@gmail.com");
   const [planName, setPlanName] = useState<string>("Standard");
   const [quantity, setQuantity] = useState<number>(1);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
-  const [planId, setPlanId] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("6755ab5c64f5a86aae4e5de5");
+  const [processing3DS, setProcessing3DS] = useState<boolean>(false);
 
   const [billingDetails, setBillingDetails] = useState({
-    name: "",
-    businessName: "",
+    name: "Rakesh Chhetri",
+    businessName: "Anteiku",
     country: "US",
-    city: "",
-    streetAddress1: "",
+    city: "Pokhara",
+    streetAddress1: "Lamachaur",
     streetAddress2: "",
-    state: "",
-    zipCode: "",
+    state: "Gandaki",
+    zipCode: "33700",
   });
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const createSubscriptionRequest = async (
+    paymentMethodId: string,
+    isRetry: boolean = false
+  ) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5005/api/v1/auth/business/subscription",
+        {
+          name: billingDetails.name,
+          email,
+          quantity,
+          paymentMethodId,
+          customerEmail: email,
+          planType,
+          planName,
+          planId,
+          businessName: billingDetails.businessName,
+          line1: billingDetails.streetAddress1,
+          line2: billingDetails.streetAddress2,
+          city: billingDetails.city,
+          state: billingDetails.state,
+          zipCode: billingDetails.zipCode,
+          country: billingDetails.country,
+          slotAddition: false,
+          referral: true,
+          referredById: "6761188c6d0ce13b90f0c1f5",
+          isRetry,
+        },
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+            "x-refresh-token":
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleSetupIntent = async (
+    clientSecret: string,
+    paymentMethodId: string
+  ) => {
+    if (!stripe) return false;
+
+    setProcessing3DS(true);
+    try {
+      const { error: setupError, setupIntent } = await stripe.confirmCardSetup(
+        clientSecret,
+        {
+          payment_method: paymentMethodId,
+        }
+      );
+
+      if (setupError) {
+        setError(setupError.message || "Setup authentication failed");
+        return false;
+      }
+
+      if (setupIntent.status === "succeeded") {
+        console.log("Setup Intent succeeded, retrying subscription...");
+        const retryResponse = await createSubscriptionRequest(
+          paymentMethodId,
+          true
+        );
+
+        if (retryResponse.status === "success") {
+          if (retryResponse.data.message === "requires_confirmation") {
+            return await handleSetupIntent(
+              retryResponse.data.setupIntentClientSecret,
+              paymentMethodId
+            );
+          } else if (retryResponse.data.message === "requires_action") {
+            return await handlePaymentIntent(
+              retryResponse.data.paymentIntentClientSecret,
+              paymentMethodId
+            );
+          }
+          console.log("Subscription retry successful"); // Debug log
+          return true;
+        } else {
+          console.log("Subscription retry failed"); // Debug log
+        }
+      }
+
+      setError("Setup failed");
+      return false;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred during setup verification"
+      );
+      return false;
+    } finally {
+      setProcessing3DS(false);
+    }
+  };
+
+  const handlePaymentIntent = async (
+    clientSecret: string,
+    paymentMethodId: string
+  ): Promise<boolean> => {
+    if (!stripe) return false;
+
+    setProcessing3DS(true);
+    try {
+      const { error: paymentError, paymentIntent } =
+        await stripe.confirmCardPayment(clientSecret);
+
+      if (paymentError) {
+        setError(paymentError.message || "Payment authentication failed");
+        return false;
+      }
+
+      if (paymentIntent.status === "succeeded") {
+        // After successful payment confirmation, retry the subscription
+        const retryResponse = await createSubscriptionRequest(
+          paymentMethodId,
+          true
+        );
+
+        if (retryResponse.status === "success") {
+          console.log("Subscription retry successful", retryResponse);
+          if (retryResponse.data.message === "requires_confirmation") {
+            return await handleSetupIntent(
+              retryResponse.data.setupIntentClientSecret,
+              paymentMethodId
+            );
+          } else if (retryResponse.data.message === "requires_action") {
+            return await handlePaymentIntent(
+              retryResponse.data.paymentIntentClientSecret,
+              paymentMethodId
+            );
+          } else {
+            alert("Subscription created successfully!");
+            return true;
+          }
+        } else {
+          console.log("Subscription retry failed"); // Debug log
+        }
+      }
+
+      setError("Payment failed");
+      return false;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred during payment verification"
+      );
+      return false;
+    } finally {
+      setProcessing3DS(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+    setError(null);
 
     if (!stripe || !elements) {
       setError("Stripe has not loaded yet.");
@@ -79,33 +243,35 @@ const CheckoutForm: React.FC = () => {
         return;
       }
 
-      const response = await axios.post(
-        "http://localhost:5005/api/v1/user/subscription",
-        {
-          name: billingDetails.name,
-          email,
-          quantity,
-          paymentMethodId: paymentMethod?.id,
-          customerEmail: email,
-          planType,
-          planName,
-          planId,
-          businessName: billingDetails.businessName,
-          line1: billingDetails.streetAddress1,
-          line2: billingDetails.streetAddress2,
-          city: billingDetails.city,
-          state: billingDetails.state,
-          zipCode: billingDetails.zipCode,
-          country: billingDetails.country,
-          slotAddition: false,
-          referral: false,
-        }
-      );
+      if (!paymentMethod?.id) {
+        setError("No payment method ID received");
+        setLoading(false);
+        return;
+      }
 
-      if (response.data.status === "success") {
-        alert("Subscription created successfully!");
-      } else {
-        setError("Failed to create subscription.");
+      const response = await createSubscriptionRequest(paymentMethod.id);
+
+      if (response.status === "success") {
+        let success;
+        if (response.data.message === "requires_confirmation") {
+          success = await handleSetupIntent(
+            response.data.setupIntentClientSecret,
+            paymentMethod.id
+          );
+        } else if (response.data.message === "requires_action") {
+          console.log("Before PaymentIntent 3DS"); // Add debug log
+          success = await handlePaymentIntent(
+            response.data.paymentIntentClientSecret,
+            paymentMethod.id
+          );
+
+          if (!success) {
+            setLoading(false);
+            return;
+          }
+        } else {
+          alert("Subscription created successfully!");
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred.");
@@ -307,12 +473,17 @@ const CheckoutForm: React.FC = () => {
         <CardElement id="card-element" options={cardElementOptions} />
       </div>
       {error && <div className="error">{error}</div>}
+      {error && <div className="error">{error}</div>}
       <button
         type="submit"
-        disabled={!stripe || loading}
+        disabled={!stripe || loading || processing3DS}
         className="btn-submit"
       >
-        {loading ? "Processing..." : "Subscribe"}
+        {loading
+          ? "Processing..."
+          : processing3DS
+          ? "Authenticating..."
+          : "Subscribe"}
       </button>
     </form>
   );

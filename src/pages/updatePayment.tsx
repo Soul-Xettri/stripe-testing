@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import axios from "axios";
 
 const stripePromise = loadStripe(
@@ -11,181 +16,195 @@ const UpdatePaymentMethodPage: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [customerId, setCustomerId] = useState<string>("");
-  const [paymentId, setPaymentId] = useState<string>(""); // Added to capture the paymentId
-  const [message, setMessage] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [paymentId, setPaymentId] = useState("");
+  const [isRetry, setIsRetry] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [processing3DS, setProcessing3DS] = useState(false);
 
-  const handleUpdatePaymentMethod = async () => {
+  const handleSetupIntent = async (
+    clientSecret: string,
+    paymentMethodId: string
+  ) => {
+    if (!stripe) return false;
+    setProcessing3DS(true);
     try {
-      if (!stripe || !elements) {
-        setMessage("Stripe is not loaded yet.");
-        return;
-      }
-
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
-        setMessage("Card details are required.");
-        return;
-      }
-
-      if (!customerId || !paymentId) {
-        setMessage("Customer ID and Payment ID are required.");
-        return;
-      }
-
-      setLoading(true);
-      setMessage("");
-
-      // Create a payment method using Stripe
-      const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-        billing_details: {
-          name: "John Doe", // Replace with dynamic input if needed
-        },
-      });
-
-      if (error) {
-        setMessage(error.message || "Failed to create payment method.");
-        setLoading(false);
-        return;
-      }
-
-      // Send the paymentMethodId and paymentId to the backend
-      const response = await axios.put(
-        "http://localhost:5005/api/v1/user/customerPaymentMethod",
+      const { error: setupError, setupIntent } = await stripe.confirmCardSetup(
+        clientSecret,
         {
-          customerId,
-          oldPaymentMethodId: paymentId, // Include paymentId explicitly
-          paymentMethodId: paymentMethod?.id,
+          payment_method: paymentMethodId,
         }
       );
 
-      setMessage(
-        response.data?.data?.message || "Payment method updated successfully!"
+      if (setupError) {
+        setError(setupError.message || "3DS authentication failed");
+        return false;
+      }
+
+      if (setupIntent.status === "succeeded") {
+        setMessage("Payment method successfully authenticated and updated!");
+        return true;
+      }
+
+      setError("Setup failed");
+      return false;
+    } catch (err) {
+      setError("An error occurred during setup verification");
+      return false;
+    } finally {
+      setProcessing3DS(false);
+    }
+  };
+
+  const handleUpdatePaymentMethod = async () => {
+    if (!stripe || !elements) {
+      setError("Stripe is not loaded yet.");
+      return;
+    }
+
+    if (!paymentId) {
+      setError("Payment ID is required.");
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setError("Card details are required.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const { paymentMethod, error } = await stripe.createPaymentMethod({
+        type: "card",
+        card: cardElement,
+        billing_details: { name: "John Doe" },
+      });
+
+      if (error) {
+        setError(error.message || "Failed to create payment method.");
+        return;
+      }
+
+      const response = await axios.put(
+        "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+        {
+          oldPaymentMethodId: paymentId,
+          paymentMethodId: paymentMethod?.id,
+          isRetry,
+        },
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+            "x-refresh-token":
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+          },
+        }
       );
-    } catch (err: any) {
-      setMessage(
-        err.response?.data?.message || "Error updating payment method."
-      );
+
+      if (response.data?.data?.message === "requires_confirmation") {
+        const setupSuccess = await handleSetupIntent(
+          response.data.data.setupIntentClientSecret,
+          paymentMethod.id
+        );
+
+        if (setupSuccess) {
+          const retryResponse = await axios.put(
+            "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+            {
+              oldPaymentMethodId: paymentId,
+              paymentMethodId: paymentMethod?.id,
+              isRetry: true,
+            },
+            {
+              headers: {
+                Authorization:
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+                "x-refresh-token":
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+              },
+            }
+          );
+
+          if (retryResponse.data?.data?.success) {
+            setMessage(
+              "Payment method updated successfully after confirmation."
+            );
+          } else {
+            setError("Failed to update payment method after confirmation.");
+          }
+        }
+      } else {
+        setMessage("Payment method updated successfully.");
+      }
+    } catch (err) {
+      setError("Error updating payment method.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Update Payment Method</h2>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Customer ID:</label>
-        <input
-          type="text"
-          placeholder="Enter Customer ID"
-          value={customerId}
-          onChange={(e) => setCustomerId(e.target.value)}
-          style={styles.input}
-        />
-      </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Payment ID:</label>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">
+        Update Payment Method
+      </h2>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Old Payment ID
+        </label>
         <input
           type="text"
           placeholder="Enter Payment ID"
           value={paymentId}
           onChange={(e) => setPaymentId(e.target.value)}
-          style={styles.input}
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Card Details:</label>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
-                color: "#32325d",
-                "::placeholder": {
-                  color: "#aab7c4",
-                },
-              },
-              invalid: {
-                color: "#fa755a",
-                iconColor: "#fa755a",
-              },
-            },
-          }}
+
+      <div className="mb-4 flex items-center">
+        <input
+          type="checkbox"
+          checked={isRetry}
+          onChange={(e) => setIsRetry(e.target.checked)}
+          className="mr-2"
         />
+        <label className="text-sm font-medium text-gray-700">
+          Retry failed payment
+        </label>
       </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Card Details
+        </label>
+        <div className="border p-3 rounded-md">
+          <CardElement className="p-2" />
+        </div>
+      </div>
+
       <button
         onClick={handleUpdatePaymentMethod}
-        style={styles.button}
-        disabled={loading}
+        disabled={loading || processing3DS}
+        className={`w-full px-4 py-2 rounded-md text-white font-semibold ${
+          loading || processing3DS
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-500 hover:bg-blue-600"
+        }`}
       >
-        {loading ? "Updating..." : "Update Payment Method"}
+        {loading || processing3DS ? "Processing..." : "Update Payment Method"}
       </button>
-      {message && (
-        <p style={message.includes("success") ? styles.success : styles.error}>
-          {message}
-        </p>
-      )}
+
+      {message && <p className="mt-3 text-green-600 text-center">{message}</p>}
+      {error && <p className="mt-3 text-red-600 text-center">{error}</p>}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: "400px",
-    margin: "20px auto",
-    padding: "20px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    backgroundColor: "#fff",
-    fontFamily: "Arial, sans-serif",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "20px",
-    color: "#333",
-  },
-  formGroup: {
-    marginBottom: "15px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "5px",
-    fontWeight: "bold",
-    color: "#555",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    fontSize: "16px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#5c67f2",
-    color: "#fff",
-    fontSize: "18px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  success: {
-    color: "green",
-    marginTop: "15px",
-    textAlign: "center",
-  },
-  error: {
-    color: "red",
-    marginTop: "15px",
-    textAlign: "center",
-  },
 };
 
 const UpdatePaymentMethodWrapper: React.FC = () => (
