@@ -76,7 +76,11 @@ const AddPaymentMethodPage: React.FC = () => {
       const { paymentMethod, error } = await stripe.createPaymentMethod({
         type: "card",
         card: cardElement,
-        billing_details: { name: "User Name" },
+        billing_details: {
+          address: {
+            country: "NP",
+          },
+        },
       });
 
       if (error) {
@@ -86,13 +90,17 @@ const AddPaymentMethodPage: React.FC = () => {
 
       const response = await axios.post(
         "http://localhost:5005/api/v1/auth/customerPaymentMethod",
-        { paymentMethodId: paymentMethod?.id },
+        {
+          paymentMethodId: paymentMethod?.id,
+          // country: paymentMethod?.billing_details.address?.country,
+          // zipCode: paymentMethod?.billing_details.address?.postal_code,
+        },
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
           },
         }
       );
@@ -107,13 +115,18 @@ const AddPaymentMethodPage: React.FC = () => {
           // Retry after confirmation
           const retryResponse = await axios.post(
             "http://localhost:5005/api/v1/auth/customerPaymentMethod",
-            { paymentMethodId: paymentMethod?.id, isRetry: true },
+            {
+              paymentMethodId: paymentMethod?.id,
+              isRetry: true,
+              // country: paymentMethod?.billing_details.address?.country,
+              // zipCode: paymentMethod?.billing_details.address?.postal_code,
+            },
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
                 "x-refresh-token":
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
               },
             }
           );

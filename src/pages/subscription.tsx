@@ -19,9 +19,9 @@ const CheckoutForm: React.FC = () => {
 
   const [email, setEmail] = useState<string>("soulchhetri@gmail.com");
   const [planName, setPlanName] = useState<string>("Standard");
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(100);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
-  const [planId, setPlanId] = useState<string>("6755ab5c64f5a86aae4e5de5");
+  const [planId, setPlanId] = useState<string>("6755ab5e64f5a86aae4e5ded");
   const [processing3DS, setProcessing3DS] = useState<boolean>(false);
 
   const [billingDetails, setBillingDetails] = useState({
@@ -69,9 +69,9 @@ const CheckoutForm: React.FC = () => {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzM5NDUzMDI1LCJleHAiOjE3Mzk3OTg2MjV9.oRaVR-JhjSmlj8gRsoaawMPHDzBhSmOgt6cASoBNIqY",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YWM4NjU3ZWU1N2I1OTI2ZjEwMjc3NiIsImlhdCI6MTczOTQ1MzAyMiwiZXhwIjoxNzM5ODg1MDIyfQ.a4MIt99wOGI6q5yDychYwon9cSQZWsiqKGxlaR8WIk0",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
           },
         }
       );
