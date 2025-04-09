@@ -81,6 +81,9 @@ const AddPaymentMethodPage: React.FC = () => {
             country: "NP",
           },
         },
+        metadata: {
+          inApp: "true",
+        },
       });
 
       if (error) {
@@ -89,18 +92,18 @@ const AddPaymentMethodPage: React.FC = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+        "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
         {
           paymentMethodId: paymentMethod?.id,
-          // country: paymentMethod?.billing_details.address?.country,
-          // zipCode: paymentMethod?.billing_details.address?.postal_code,
+          country: paymentMethod?.billing_details.address?.country,
+          zipCode: paymentMethod?.billing_details.address?.postal_code,
         },
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
           },
         }
       );
@@ -114,7 +117,7 @@ const AddPaymentMethodPage: React.FC = () => {
         if (setupSuccess) {
           // Retry after confirmation
           const retryResponse = await axios.post(
-            "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+            "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
             {
               paymentMethodId: paymentMethod?.id,
               isRetry: true,
@@ -124,9 +127,9 @@ const AddPaymentMethodPage: React.FC = () => {
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
                 "x-refresh-token":
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
               },
             }
           );

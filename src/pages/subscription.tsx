@@ -44,7 +44,7 @@ const CheckoutForm: React.FC = () => {
   ) => {
     try {
       const response = await axios.post(
-        "http://localhost:5005/api/v1/auth/business/subscription",
+        "https://betaapi.krofile.com/api/v1/auth/business/subscription",
         {
           name: billingDetails.name,
           email,
@@ -69,9 +69,9 @@ const CheckoutForm: React.FC = () => {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
           },
         }
       );
@@ -234,6 +234,9 @@ const CheckoutForm: React.FC = () => {
             state: billingDetails.state,
             postal_code: billingDetails.zipCode,
           },
+        },
+        metadata: {
+          inApp: 'true',
         },
       });
 

@@ -82,10 +82,13 @@ const UpdatePaymentMethodPage: React.FC = () => {
       const { paymentMethod, error } = await stripe.createPaymentMethod({
         type: "card",
         card: cardElement,
-        billing_details: { 
-          address:{
+        billing_details: {
+          address: {
             country: "NP",
-          }
+          },
+        },
+        metadata: {
+          inApp: "true",
         },
       });
 
@@ -95,7 +98,7 @@ const UpdatePaymentMethodPage: React.FC = () => {
       }
 
       const response = await axios.put(
-        "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+        "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
         {
           oldPaymentMethodId: paymentId,
           paymentMethodId: paymentMethod?.id,
@@ -106,9 +109,9 @@ const UpdatePaymentMethodPage: React.FC = () => {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
           },
         }
       );
@@ -121,7 +124,7 @@ const UpdatePaymentMethodPage: React.FC = () => {
 
         if (setupSuccess) {
           const retryResponse = await axios.put(
-            "http://localhost:5005/api/v1/auth/customerPaymentMethod",
+            "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
             {
               oldPaymentMethodId: paymentId,
               paymentMethodId: paymentMethod?.id,
@@ -132,9 +135,9 @@ const UpdatePaymentMethodPage: React.FC = () => {
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQyMjkwMzYxLCJleHAiOjE3NDI2MzU5NjF9.UkOx3gz6BMI0iNLLFTstoVkaMUw-zAWSixLiTc3f1No",
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
                 "x-refresh-token":
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDkzZDUwNjJmZmZkNWRkMWZiY2ExZCIsImlhdCI6MTc0MjI5MDM2MSwiZXhwIjoxNzQyNzIyMzYxfQ.k5wtHqvONGw7dNJh06SY7M72p-R3k49JynG9u-ynmE8",
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
               },
             }
           );
