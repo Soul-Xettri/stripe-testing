@@ -17,11 +17,11 @@ const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [email, setEmail] = useState<string>("soulchhetri@gmail.com");
-  const [planName, setPlanName] = useState<string>("Standard");
+  const [email, setEmail] = useState<string>("pamenib260@ofacer.com");
+  const [planName, setPlanName] = useState<string>("Premium");
   const [quantity, setQuantity] = useState<number>(100);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
-  const [planId, setPlanId] = useState<string>("6755ab5e64f5a86aae4e5ded");
+  const [planId, setPlanId] = useState<string>("6755ab5d64f5a86aae4e5de9");
   const [processing3DS, setProcessing3DS] = useState<boolean>(false);
 
   const [billingDetails, setBillingDetails] = useState({
@@ -44,7 +44,7 @@ const CheckoutForm: React.FC = () => {
   ) => {
     try {
       const response = await axios.post(
-        "https://betaapi.krofile.com/api/v1/auth/business/subscription",
+        "http://localhost:5005/api/v1/auth/business/subscription",
         {
           name: billingDetails.name,
           email,
@@ -69,9 +69,9 @@ const CheckoutForm: React.FC = () => {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWVhODYyNWZlNmM1MDMwYWVjMGFkMCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzUxMDMzOTc2LCJleHAiOjE3NTEzNzk1NzZ9.o3dHLoGpbHN2uKW7GvCZhVGhCJcxgafv7AZcEI3pDzM",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWVhODYyNWZlNmM1MDMwYWVjMGFkMCIsImlhdCI6MTc1MTAzMzk3NSwiZXhwIjoxNzUxNDY1OTc1fQ.uUjNzNjNCUEomr9AY_4O-_kiVq7Jn92BGfP4UMSCW9I",
           },
         }
       );

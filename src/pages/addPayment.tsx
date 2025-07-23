@@ -92,18 +92,20 @@ const AddPaymentMethodPage: React.FC = () => {
       }
 
       const response = await axios.post(
-        "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
+        "http://localhost:5005/api/v1/auth/customerPaymentMethod",
         {
           paymentMethodId: paymentMethod?.id,
           country: paymentMethod?.billing_details.address?.country,
           zipCode: paymentMethod?.billing_details.address?.postal_code,
+          planId: "6755ab5d64f5a86aae4e5de9",
+          planType: "yearly",
         },
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzUzMjU3MjExLCJleHAiOjE3NTM2MDI4MTF9.sK45GW3huDJLmmmGHSFS_-ZmJu3qta9MuaoLUqxhAs4",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsImlhdCI6MTc1MzI1NzIwOSwiZXhwIjoxNzUzNjg5MjA5fQ.PHhAwdt72-_cn-sbTybMYIpjLY7P7W2IOObu_yHZNtU",
           },
         }
       );
@@ -117,19 +119,21 @@ const AddPaymentMethodPage: React.FC = () => {
         if (setupSuccess) {
           // Retry after confirmation
           const retryResponse = await axios.post(
-            "https://betaapi.krofile.com/api/v1/auth/customerPaymentMethod",
+            "http://localhost:5005/api/v1/auth/customerPaymentMethod",
             {
               paymentMethodId: paymentMethod?.id,
               isRetry: true,
-              // country: paymentMethod?.billing_details.address?.country,
-              // zipCode: paymentMethod?.billing_details.address?.postal_code,
+              country: paymentMethod?.billing_details.address?.country,
+              zipCode: paymentMethod?.billing_details.address?.postal_code,
+              planId: "6755ab5d64f5a86aae4e5de9",
+              planType: "yearly",
             },
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzQ0MTg0NTI3LCJleHAiOjE3NDQ1MzAxMjd9.TupYg9hW_Xw7qNd1lT1R_b2_jEZ9aTvOLGAZpNd8xxI",
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzUzMjU3MjExLCJleHAiOjE3NTM2MDI4MTF9.sK45GW3huDJLmmmGHSFS_-ZmJu3qta9MuaoLUqxhAs4",
                 "x-refresh-token":
-                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjVmYmU5NWU5NmQzMmMxNDcxOWYxZiIsImlhdCI6MTc0NDE4NDUyMywiZXhwIjoxNzQ0NjE2NTIzfQ.HaVDNwvS_XZAB4J_25h2pANCkM7QzZE-kib2CcJRt-g",
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsImlhdCI6MTc1MzI1NzIwOSwiZXhwIjoxNzUzNjg5MjA5fQ.PHhAwdt72-_cn-sbTybMYIpjLY7P7W2IOObu_yHZNtU",
               },
             }
           );
