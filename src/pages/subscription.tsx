@@ -17,7 +17,7 @@ const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [email, setEmail] = useState<string>("pamenib260@ofacer.com");
+  const [email, setEmail] = useState<string>("nesodaf580@modirosa.com");
   const [planName, setPlanName] = useState<string>("Premium");
   const [quantity, setQuantity] = useState<number>(100);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("monthly");
@@ -69,9 +69,9 @@ const CheckoutForm: React.FC = () => {
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWVhODYyNWZlNmM1MDMwYWVjMGFkMCIsInR5cGUiOiJhdXRoIiwiaWF0IjoxNzUxMDMzOTc2LCJleHAiOjE3NTEzNzk1NzZ9.o3dHLoGpbHN2uKW7GvCZhVGhCJcxgafv7AZcEI3pDzM",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsImlhdCI6MTc1MzM1MDYxOSwiZXhwIjoxNzUzNzgyNjE5fQ.cK1kN7gz5ITzvGRftji9v-33HzM87SrxHNccjVBtykQ",
             "x-refresh-token":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWVhODYyNWZlNmM1MDMwYWVjMGFkMCIsImlhdCI6MTc1MTAzMzk3NSwiZXhwIjoxNzUxNDY1OTc1fQ.uUjNzNjNCUEomr9AY_4O-_kiVq7Jn92BGfP4UMSCW9I",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4N2U0YmEyMjc0ZWZlZjc0YmE5Y2FhMSIsImlhdCI6MTc1MzM1MDYxOSwiZXhwIjoxNzUzNzgyNjE5fQ.cK1kN7gz5ITzvGRftji9v-33HzM87SrxHNccjVBtykQ",
           },
         }
       );
